@@ -55,7 +55,7 @@ public:
 
     int fordFulkerson(int source, int sink)
     {
-        steps.clear();
+        steps.clear(); // why important
         vector<int> parent(vertices);
         int maxFlow = 0;
         stringstream stepStream;
@@ -72,13 +72,14 @@ public:
                 }
             }
         }
-        steps.push_back(stepStream.str());
+        steps.push_back(stepStream.str()); // why storing in steps
         stepStream.str("");
 
         while (breadthFirstSearch(source, sink, parent))
         {
-            int pathFlow = numeric_limits<int>::max();
+            int pathFlow = numeric_limits<int>::max(); // change to int_max
 
+            // to find bottleneck capacity
             for (int v = sink; v != source; v = parent[v])
             {
                 int u = parent[v];
@@ -89,7 +90,7 @@ public:
             {
                 int u = parent[v];
                 residualGraph[u][v] -= pathFlow;
-                residualGraph[v][u] += pathFlow;
+                residualGraph[v][u] += pathFlow; // remove it
             }
 
             stepStream << "Augmenting Path Found. Path Flow: " << pathFlow << "\n";
@@ -122,7 +123,7 @@ MaxFlowSolver *solver = nullptr;
 
 static void display_steps(GtkWidget *widget, gpointer data)
 {
-    GtkTextBuffer *buffer;
+    GtkTextBuffer *buffer; // for text view
     GtkTextIter end;
 
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
@@ -155,7 +156,6 @@ static void run_max_flow(GtkWidget *widget, gpointer data)
     int sink = stoi(sinkText);
     int numVertices = source > sink ? source + 1 : sink + 1;
 
-    // Create solver with user-specified number of vertices
     solver = new MaxFlowSolver(numVertices);
 
     // Parse and add edges
@@ -184,21 +184,18 @@ static void activate(GtkApplication *app, gpointer user_data)
     sourceEntry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(sourceEntry), "Enter source node");
     gtk_box_pack_start(GTK_BOX(box), sourceLabel, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(box), sourceEntry, FALSE, FALSE, 0);
 
     // Sink node input
     GtkWidget *sinkLabel = gtk_label_new("Sink Node:");
     sinkEntry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(sinkEntry), "Enter sink node");
     gtk_box_pack_start(GTK_BOX(box), sinkLabel, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(box), sinkEntry, FALSE, FALSE, 0);
 
     // Edge input
     GtkWidget *edgeLabel = gtk_label_new("Edges (format: u v capacity):");
     edgeEntry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(edgeEntry), "0 1 16 0 2 13 1 3 12...");
     gtk_box_pack_start(GTK_BOX(box), edgeLabel, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(box), edgeEntry, FALSE, FALSE, 0);
 
     // Run button
     runButton = gtk_button_new_with_label("Run Max Flow");
