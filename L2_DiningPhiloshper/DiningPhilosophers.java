@@ -15,7 +15,6 @@ public class DiningPhilosophers extends JFrame {
     private final JTextArea statusArea;
     private boolean isRunning = false;
     private final JButton startButton;
-    private final JButton exitButton; // New exit button
 
     public DiningPhilosophers() {
         setTitle("Dining Philosophers Visualization");
@@ -32,14 +31,7 @@ public class DiningPhilosophers extends JFrame {
         JPanel controlPanel = new JPanel();
         startButton = new JButton("Start");
         startButton.addActionListener(e -> toggleSimulation());
-
-        // Add exit button
-        exitButton = new JButton("Exit Process");
-        exitButton.setBackground(new Color(255, 100, 100));
-        exitButton.addActionListener(e -> exitProcess());
-
         controlPanel.add(startButton);
-        controlPanel.add(exitButton);
 
         // Create legend panel
         JPanel legendPanel = new JPanel();
@@ -72,27 +64,6 @@ public class DiningPhilosophers extends JFrame {
         }
     }
 
-    private void exitProcess() {
-        // Show confirmation dialog
-        int result = JOptionPane.showConfirmDialog(
-                this,
-                "Are you sure you want to exit?",
-                "Exit Confirmation",
-                JOptionPane.YES_NO_OPTION);
-
-        if (result == JOptionPane.YES_OPTION) {
-            // Stop all philosophers if running
-            if (isRunning) {
-                toggleSimulation();
-            }
-
-            // Clean up and exit
-            logStatus("Shutting down simulation...\n");
-            dispose();
-            System.exit(0);
-        }
-    }
-
     private void addLegendItem(JPanel panel, String text, Color color) {
         JPanel item = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JPanel colorBox = new JPanel();
@@ -107,7 +78,6 @@ public class DiningPhilosophers extends JFrame {
         if (!isRunning) {
             isRunning = true;
             startButton.setText("Stop");
-            startButton.setBackground(new Color(255, 200, 200));
             statusArea.setText("");
             logStatus("Simulation started\n");
             for (Philosopher philosopher : philosophers) {
@@ -116,7 +86,6 @@ public class DiningPhilosophers extends JFrame {
         } else {
             isRunning = false;
             startButton.setText("Start");
-            startButton.setBackground(new Color(200, 255, 200));
             logStatus("Simulation stopped\n");
             for (Philosopher philosopher : philosophers) {
                 philosopher.interrupt();
@@ -252,13 +221,6 @@ public class DiningPhilosophers extends JFrame {
     }
 
     public static void main(String[] args) {
-        try {
-            // Set system look and feel
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         SwingUtilities.invokeLater(() -> {
             DiningPhilosophers frame = new DiningPhilosophers();
             frame.setVisible(true);
