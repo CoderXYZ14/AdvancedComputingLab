@@ -89,7 +89,7 @@ public:
             {
                 int u = parent[v];
                 residualGraph[u][v] -= pathFlow;
-                residualGraph[v][u] += pathFlow;
+                residualGraph[v][u] += pathFlow; // can comment
             }
 
             stepStream << "Augmenting Path Found. Path Flow: " << pathFlow << "\n";
