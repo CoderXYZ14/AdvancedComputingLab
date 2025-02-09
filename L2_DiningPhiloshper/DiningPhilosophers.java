@@ -13,8 +13,8 @@ public class DiningPhilosophers extends JFrame {
     private final Philosopher[] philosophers = new Philosopher[NUM_PHILOSOPHERS];
     private final PhilosopherPanel philosopherPanel;
     private final JTextArea statusArea;
-    private boolean isRunning = false;
     private final JButton startButton;
+    private volatile boolean isPaused = true;
 
     public DiningPhilosophers() {
         setTitle("Dining Philosophers Visualization");
@@ -61,6 +61,7 @@ public class DiningPhilosophers extends JFrame {
         // Initialize philosophers
         for (int i = 0; i < NUM_PHILOSOPHERS; i++) {
             philosophers[i] = new Philosopher(i);
+            philosophers[i].start(); // Start threads immediately but they'll wait due to isPaused
         }
     }
 
@@ -75,21 +76,13 @@ public class DiningPhilosophers extends JFrame {
     }
 
     private void toggleSimulation() {
-        if (!isRunning) {
-            isRunning = true;
-            startButton.setText("Stop");
-            statusArea.setText("");
-            logStatus("Simulation started\n");
-            for (Philosopher philosopher : philosophers) {
-                philosopher.start();
-            }
-        } else {
-            isRunning = false;
-            startButton.setText("Start");
-            logStatus("Simulation stopped\n");
-            for (Philosopher philosopher : philosophers) {
-                philosopher.interrupt();
-            }
+        isPaused = !isPaused;
+        startButton.setText(isPaused ? "Start" : "Stop");
+        logStatus(isPaused ? "Simulation paused\n" : "Simulation resumed\n");
+
+        // Wake up all philosophers to either continue or check pause state
+        synchronized (DiningPhilosophers.this) {
+            notifyAll();
         }
     }
 
@@ -113,21 +106,28 @@ public class DiningPhilosophers extends JFrame {
             return currentState;
         }
 
+        private void checkPaused() throws InterruptedException {
+            synchronized (DiningPhilosophers.this) {
+                while (isPaused) {
+                    DiningPhilosophers.this.wait();
+                }
+            }
+        }
+
         @Override
         public void run() {
             try {
                 while (!Thread.interrupted()) {
+                    checkPaused();
                     think();
+                    checkPaused();
                     pickUpChopsticks();
+                    checkPaused();
                     eat();
+                    checkPaused();
                     putDownChopsticks();
                 }
             } catch (InterruptedException e) {
-                // Reset chopsticks if holding any
-                try {
-                    putDownChopsticks();
-                } catch (Exception ignored) {
-                }
                 Thread.currentThread().interrupt();
             }
         }
@@ -136,7 +136,7 @@ public class DiningPhilosophers extends JFrame {
             currentState = PhilosopherState.THINKING;
             logStatus("Philosopher " + id + " is thinking\n");
             philosopherPanel.repaint();
-            Thread.sleep((long) (Math.random() * 5000 + 3000)); // Slower timing
+            Thread.sleep((long) (Math.random() * 5000 + 5000));
         }
 
         private void pickUpChopsticks() throws InterruptedException {
@@ -146,7 +146,7 @@ public class DiningPhilosophers extends JFrame {
 
             chopsticks[id].acquire();
             logStatus("Philosopher " + id + " picked up left chopstick\n");
-            Thread.sleep(1000); // Added delay between picking up chopsticks
+            Thread.sleep(2000);
 
             chopsticks[(id + 1) % NUM_PHILOSOPHERS].acquire();
             logStatus("Philosopher " + id + " picked up right chopstick\n");
@@ -156,7 +156,7 @@ public class DiningPhilosophers extends JFrame {
             currentState = PhilosopherState.EATING;
             logStatus("Philosopher " + id + " is eating\n");
             philosopherPanel.repaint();
-            Thread.sleep((long) (Math.random() * 5000 + 3000)); // Slower timing
+            Thread.sleep((long) (Math.random() * 5000 + 5000));
         }
 
         private void putDownChopsticks() {
