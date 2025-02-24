@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 function add_date_to_files() {
     folder=$1
@@ -19,7 +19,6 @@ function copy_common_files() {
     folder2=$2
     dest=$3
     
-    mkdir -p $dest
     
     for file in $folder1/*; do
         name=$(basename "$file")
