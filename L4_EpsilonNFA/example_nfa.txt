@@ -1,0 +1,8 @@
+initial state q0
+final is q3
+all states q0,q1,q2,q3
+q0 a q0
+q0 b q0
+q0 e q1
+q1 a q2
+q2 b q3
